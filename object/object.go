@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"hash/fnv"
-	"lyz-lang/ast"
+	"lyz-lang-2nd/ast"
 	"strings"
 )
 

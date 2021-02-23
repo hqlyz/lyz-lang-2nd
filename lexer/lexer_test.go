@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"lyz-lang/token"
+	"lyz-lang-2nd/token"
 	"testing"
 )
 

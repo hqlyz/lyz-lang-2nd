@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"lyz-lang/repl"
+	"lyz-lang-2nd/repl"
 	"os"
 	"os/user"
 	"path/filepath"

@@ -1,6 +1,6 @@
 package lexer
 
-import "lyz-lang/token"
+import "lyz-lang-2nd/token"
 
 type Lexer struct {
 	input        string

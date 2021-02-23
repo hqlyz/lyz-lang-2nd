@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"lyz-lang/ast"
-	"lyz-lang/lexer"
-	"lyz-lang/token"
+	"lyz-lang-2nd/ast"
+	"lyz-lang-2nd/lexer"
+	"lyz-lang-2nd/token"
 	"strconv"
 )
 

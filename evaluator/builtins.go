@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"fmt"
-	"lyz-lang/object"
+	"lyz-lang-2nd/object"
 )
 
 var builtins = map[string]object.Object{

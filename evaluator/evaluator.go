@@ -2,8 +2,8 @@ package evaluator
 
 import (
 	"fmt"
-	"lyz-lang/ast"
-	"lyz-lang/object"
+	"lyz-lang-2nd/ast"
+	"lyz-lang-2nd/object"
 )
 
 var (

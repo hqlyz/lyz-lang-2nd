@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"lyz-lang/lexer"
-	"lyz-lang/object"
-	"lyz-lang/parser"
+	"lyz-lang-2nd/lexer"
+	"lyz-lang-2nd/object"
+	"lyz-lang-2nd/parser"
 	"testing"
 )
 

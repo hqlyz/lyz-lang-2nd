@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"lyz-lang/ast"
-	"lyz-lang/lexer"
+	"lyz-lang-2nd/ast"
+	"lyz-lang-2nd/lexer"
 	"testing"
 )
 

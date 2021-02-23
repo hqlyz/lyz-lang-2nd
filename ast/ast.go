@@ -2,7 +2,7 @@ package ast
 
 import (
 	"bytes"
-	"lyz-lang/token"
+	"lyz-lang-2nd/token"
 	"strings"
 )
 
