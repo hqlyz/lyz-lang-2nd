@@ -3,10 +3,47 @@ package vm
 import (
 	"fmt"
 	"lyz-lang-2nd/ast"
+	"lyz-lang-2nd/compiler"
 	"lyz-lang-2nd/lexer"
 	"lyz-lang-2nd/object"
 	"lyz-lang-2nd/parser"
+	"testing"
 )
+
+type vmTestCase struct {
+	input    string
+	expected interface{}
+}
+
+func runVmTest(t *testing.T, tests []vmTestCase) {
+	t.Helper()
+	for _, tt := range tests {
+		program := parse(tt.input)
+		comp := compiler.New()
+		err := comp.Compile(program)
+		if err != nil {
+			t.Fatalf("compiler error: %s", err)
+		}
+		vm := New(comp.Bytecode())
+		err = vm.Run()
+		if err != nil {
+			t.Fatalf("vm error: %s", err)
+		}
+
+		stackElem := vm.StackTop()
+		testExpectedObject(t, tt.expected, stackElem)
+	}
+}
+
+func testExpectedObject(t *testing.T, expected interface{}, actual object.Object) {
+	switch exp := expected.(type) {
+	case int:
+		err := testIntegerObject(int64(exp), actual)
+		if err != nil {
+			t.Errorf("testIntegerObject failed: %s", err)
+		}
+	}
+}
 
 func parse(input string) *ast.Program {
 	l := lexer.New(input)
@@ -14,7 +51,7 @@ func parse(input string) *ast.Program {
 	return p.ParseProgram()
 }
 
-func TestIntegerObject(expected int64, actual object.Object) error {
+func testIntegerObject(expected int64, actual object.Object) error {
 	result, ok := actual.(*object.Integer)
 	if !ok {
 		return fmt.Errorf("object is not Integer. got=%T (%+v)", actual, actual)
@@ -25,4 +62,14 @@ func TestIntegerObject(expected int64, actual object.Object) error {
 	}
 
 	return nil
+}
+
+func TestIntegerArithmetic(t *testing.T) {
+	tests := []vmTestCase{
+		{"1", 1},
+		{"2", 2},
+		{"1 + 2", 3},
+	}
+
+	runVmTest(t, tests)
 }

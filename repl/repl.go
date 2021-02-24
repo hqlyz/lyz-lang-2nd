@@ -2,11 +2,12 @@ package repl
 
 import (
 	"bufio"
+	"fmt"
 	"io"
-	"lyz-lang-2nd/evaluator"
+	"lyz-lang-2nd/compiler"
 	"lyz-lang-2nd/lexer"
-	"lyz-lang-2nd/object"
 	"lyz-lang-2nd/parser"
+	"lyz-lang-2nd/vm"
 )
 
 // PROMPT is a console prompt symbol
@@ -29,7 +30,6 @@ const MONKEY_FACE = `            __,__
 func Start(in io.Reader, out io.Writer) {
 	scan := bufio.NewScanner(in)
 	w := bufio.NewWriter(out)
-	env := object.NewEnvironment()
 
 	for {
 		w.WriteString(PROMPT)
@@ -48,9 +48,21 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(program, env)
-		if evaluated != nil {
-			w.WriteString(evaluated.Inspect())
+		comp := compiler.New()
+		err := comp.Compile(program)
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			continue
+		}
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+			continue
+		}
+		stackTop := machine.StackTop()
+		if stackTop != nil {
+			w.WriteString(stackTop.Inspect())
 			w.WriteString("\n")
 		}
 		w.Flush()
