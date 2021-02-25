@@ -2,28 +2,25 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"log"
-	"lyz-lang-2nd/repl"
 	"os"
-	"os/user"
 	"path/filepath"
 )
 
 var totalLines = 0
 
 func main() {
-	u, err := user.Current()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("Hello %s! This is the LYZ programming language!\n", u.Username)
-	fmt.Printf("Feel free to type in commands\n")
-	repl.Start(os.Stdin, os.Stdout)
+	// u, err := user.Current()
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// fmt.Printf("Hello %s! This is the LYZ programming language!\n", u.Username)
+	// fmt.Printf("Feel free to type in commands\n")
+	// repl.Start(os.Stdin, os.Stdout)
 
-	// walkDir(".")
-	// log.Printf("the total lines in source code: %d\n", totalLines)
+	walkDir(".")
+	log.Printf("the total lines in source code: %d\n", totalLines)
 }
 
 func walkDir(dir string) {

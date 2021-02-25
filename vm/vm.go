@@ -9,6 +9,11 @@ import (
 
 const StackSize = 2048
 
+var (
+	True  = &object.Boolean{Value: true}
+	False = &object.Boolean{Value: false}
+)
+
 type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
@@ -36,16 +41,126 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpAdd:
-			right := vm.pop()
-			left := vm.pop()
-			rightValue := right.(*object.Integer).Value
-			leftValue := left.(*object.Integer).Value
-			sumObj := &object.Integer{Value: rightValue + leftValue}
-			vm.push(sumObj)
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			err := vm.executeBinaryOperation(op)
+			if err != nil {
+				return err
+			}
+		case code.OpPop:
+			vm.pop()
+		case code.OpTrue:
+			err := vm.push(True)
+			if err != nil {
+				return err
+			}
+		case code.OpFalse:
+			err := vm.push(False)
+			if err != nil {
+				return err
+			}
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+			err := vm.executeComparison(op)
+			if err != nil {
+				return err
+			}
+		case code.OpBang:
+			err := vm.executeBangOperator()
+			if err != nil {
+				return err
+			}
+		case code.OpMinus:
+			err := vm.executeMinusOperator()
+			if err != nil {
+				return nil
+			}
 		}
 	}
 	return nil
+}
+
+func (vm *VM) executeMinusOperator() error {
+	value := vm.pop()
+	if value.Type() != object.INTEGER_OBJ {
+		return fmt.Errorf("minus operator only support integer, got=%s", value.Type())
+	}
+	integer := value.(*object.Integer)
+	return vm.push(&object.Integer{Value: -integer.Value})
+}
+
+func (vm *VM) executeBangOperator() error {
+	value := vm.pop()
+	switch value {
+	case True:
+		return vm.push(False)
+	case False:
+		return vm.push(True)
+	default:
+		return vm.push(False)
+	}
+}
+
+func (vm *VM) executeComparison(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+	leftType := left.Type()
+	rightType := right.Type()
+	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+		return vm.executeIntegerComparison(op, left, right)
+	}
+
+	switch op {
+	case code.OpEqual:
+		return vm.push(nativeBoolToBooleanObject(right == left))
+	case code.OpNotEqual:
+		return vm.push(nativeBoolToBooleanObject(right != left))
+	default:
+		return fmt.Errorf("unknown operator: %d (%s %s)", op, left.Type(), right.Type())
+	}
+}
+
+func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object) error {
+	leftValue := left.(*object.Integer).Value
+	rightValue := right.(*object.Integer).Value
+	switch op {
+	case code.OpEqual:
+		return vm.push(nativeBoolToBooleanObject(leftValue == rightValue))
+	case code.OpNotEqual:
+		return vm.push(nativeBoolToBooleanObject(leftValue != rightValue))
+	case code.OpGreaterThan:
+		return vm.push(nativeBoolToBooleanObject(leftValue > rightValue))
+	default:
+		return fmt.Errorf("unknown operator: %d", op)
+	}
+}
+
+func (vm *VM) executeBinaryOperation(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+	leftType := left.Type()
+	rightType := right.Type()
+	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+		return vm.executeBinaryIntegerOperation(op, left, right)
+	}
+	return fmt.Errorf("unsupported types for binary operation: %s %s", leftType, rightType)
+}
+
+func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, leftObj object.Object, rightObj object.Object) error {
+	var result int64
+	leftValue := leftObj.(*object.Integer).Value
+	rightValue := rightObj.(*object.Integer).Value
+	switch op {
+	case code.OpAdd:
+		result = leftValue + rightValue
+	case code.OpSub:
+		result = leftValue - rightValue
+	case code.OpMul:
+		result = leftValue * rightValue
+	case code.OpDiv:
+		result = leftValue / rightValue
+	default:
+		return fmt.Errorf("unknown integer operator: %d", op)
+	}
+	return vm.push(&object.Integer{Value: result})
 }
 
 func (vm *VM) push(obj object.Object) error {
@@ -67,9 +182,14 @@ func (vm *VM) pop() object.Object {
 	return vm.stack[vm.sp]
 }
 
-func (vm *VM) StackTop() object.Object {
-	if vm.sp == 0 {
-		return nil
+// LastPoppedStackElem is a test-only method
+func (vm *VM) LastPoppedStackElem() object.Object {
+	return vm.stack[vm.sp]
+}
+
+func nativeBoolToBooleanObject(b bool) object.Object {
+	if b {
+		return True
 	}
-	return vm.stack[vm.sp-1]
+	return False
 }
