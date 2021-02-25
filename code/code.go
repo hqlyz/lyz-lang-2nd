@@ -12,19 +12,21 @@ type Instructions []byte
 type Opcode byte
 
 const (
-	OpConstant    Opcode = iota // 0
-	OpAdd                       // 1
-	OpPop                       // 2
-	OpSub                       // 3
-	OpMul                       // 4
-	OpDiv                       // 5
-	OpTrue                      // 6
-	OpFalse                     // 7
-	OpEqual                     // 8
-	OpNotEqual                  // 9
-	OpGreaterThan               // 10
-	OpMinus                     // 11
-	OpBang                      // 12
+	OpConstant      Opcode = iota // 0
+	OpAdd                         // 1
+	OpPop                         // 2
+	OpSub                         // 3
+	OpMul                         // 4
+	OpDiv                         // 5
+	OpTrue                        // 6
+	OpFalse                       // 7
+	OpEqual                       // 8
+	OpNotEqual                    // 9
+	OpGreaterThan                 // 10
+	OpMinus                       // 11
+	OpBang                        // 12
+	OpJumpNotTruthy               // 13
+	OpJump                        // 14
 )
 
 type Definition struct {
@@ -33,19 +35,21 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant:    {"OpConstant", []int{2}},
-	OpAdd:         {"OpAdd", []int{}},
-	OpPop:         {"OpPop", []int{}},
-	OpSub:         {"OpSub", []int{}},
-	OpMul:         {"OpMul", []int{}},
-	OpDiv:         {"OpDiv", []int{}},
-	OpTrue:        {"OpTrue", []int{}},
-	OpFalse:       {"OpFalse", []int{}},
-	OpEqual:       {"OpEqual", []int{}},
-	OpNotEqual:    {"OpNotEqual", []int{}},
-	OpGreaterThan: {"OpGreaterThan", []int{}},
-	OpMinus:       {"OpMinus", []int{}},
-	OpBang:        {"OpBang", []int{}},
+	OpConstant:      {"OpConstant", []int{2}},
+	OpAdd:           {"OpAdd", []int{}},
+	OpPop:           {"OpPop", []int{}},
+	OpSub:           {"OpSub", []int{}},
+	OpMul:           {"OpMul", []int{}},
+	OpDiv:           {"OpDiv", []int{}},
+	OpTrue:          {"OpTrue", []int{}},
+	OpFalse:         {"OpFalse", []int{}},
+	OpEqual:         {"OpEqual", []int{}},
+	OpNotEqual:      {"OpNotEqual", []int{}},
+	OpGreaterThan:   {"OpGreaterThan", []int{}},
+	OpMinus:         {"OpMinus", []int{}},
+	OpBang:          {"OpBang", []int{}},
+	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
+	OpJump:          {"OpJump", []int{2}},
 }
 
 func Lookup(op byte) (*Definition, error) {
