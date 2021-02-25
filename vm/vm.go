@@ -12,6 +12,7 @@ const StackSize = 2048
 var (
 	True  = &object.Boolean{Value: true}
 	False = &object.Boolean{Value: false}
+	Null  = &object.Null{}
 )
 
 // VM object
@@ -31,6 +32,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 		sp:           0,
 	}
 }
+
 // Run method means power on the vm
 func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
@@ -75,6 +77,22 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return nil
 			}
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip = pos - 1
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+
+			cond := vm.pop()
+			if !isTruthy(cond) {
+				ip = pos - 1
+			}
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -95,6 +113,8 @@ func (vm *VM) executeBangOperator() error {
 	case True:
 		return vm.push(False)
 	case False:
+		return vm.push(True)
+	case Null:
 		return vm.push(True)
 	default:
 		return vm.push(False)
@@ -194,4 +214,17 @@ func nativeBoolToBooleanObject(b bool) object.Object {
 		return True
 	}
 	return False
+}
+
+func isTruthy(cond object.Object) bool {
+	switch cond {
+	case True:
+		return true
+	case False:
+		return false
+	case Null:
+		return false
+	default:
+		return true
+	}
 }
