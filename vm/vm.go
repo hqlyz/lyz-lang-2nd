@@ -14,6 +14,7 @@ var (
 	False = &object.Boolean{Value: false}
 )
 
+// VM object
 type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
@@ -21,6 +22,7 @@ type VM struct {
 	sp           int // Always points to the next value. Top of stack is stack[sp-1]
 }
 
+// New creates an instance of vm
 func New(bytecode *compiler.Bytecode) *VM {
 	return &VM{
 		constants:    bytecode.Constants,
@@ -29,7 +31,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 		sp:           0,
 	}
 }
-
+// Run method means power on the vm
 func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
 		op := code.Opcode(vm.instructions[ip])
