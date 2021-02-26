@@ -20,6 +20,11 @@ type Compiler struct {
 	symbolTable         *SymbolTable
 }
 
+type Bytecode struct {
+	Instructions code.Instructions
+	Constants    []object.Object
+}
+
 func New() *Compiler {
 	return &Compiler{
 		instructions:        code.Instructions{},
@@ -215,9 +220,4 @@ func (c *Compiler) changeOperand(pos int, operand int) {
 	op := code.Opcode(c.instructions[pos])
 	newInstruction := code.Make(op, operand)
 	c.replaceInstruction(pos, newInstruction)
-}
-
-type Bytecode struct {
-	Instructions code.Instructions
-	Constants    []object.Object
 }

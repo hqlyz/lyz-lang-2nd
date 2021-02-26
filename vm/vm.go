@@ -7,7 +7,10 @@ import (
 	"lyz-lang-2nd/object"
 )
 
-const StackSize = 2048
+const (
+	StackSize  = 2048
+	GlobalSize = 65536
+)
 
 var (
 	True  = &object.Boolean{Value: true}
@@ -21,6 +24,7 @@ type VM struct {
 	instructions code.Instructions
 	stack        []object.Object
 	sp           int // Always points to the next value. Top of stack is stack[sp-1]
+	globals      []object.Object
 }
 
 // New creates an instance of vm
@@ -30,6 +34,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 		instructions: bytecode.Instructions,
 		stack:        make([]object.Object, StackSize),
 		sp:           0,
+		globals:      make([]object.Object, GlobalSize),
 	}
 }
 
@@ -90,6 +95,13 @@ func (vm *VM) Run() error {
 			}
 		case code.OpNull:
 			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+		case code.OpSetGlobal:
+			index := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			err := vm.push(vm.constants[index])
 			if err != nil {
 				return err
 			}
