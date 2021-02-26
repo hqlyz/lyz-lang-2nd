@@ -179,6 +179,17 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("variable %s was not defined", node.Value)
 		}
 		c.emit(code.OpGetGlobal, symbol.Index)
+	case *ast.StringLiteral:
+		s := &object.String{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(s))
+	case *ast.ArrayLiteral:
+		for _, elem := range node.Elements {
+			err := c.Compile(elem)
+			if err != nil {
+				return err
+			}
+		}
+		c.emit(code.OpArray, len(node.Elements))
 	}
 	return nil
 }

@@ -115,6 +115,17 @@ func (vm *VM) Run() error {
 			index := int(code.ReadUint16(vm.instructions[ip+1:]))
 			ip += 2
 			vm.globals[index] = vm.pop()
+		case code.OpArray:
+			num := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			arr := make([]object.Object, num)
+			for i := num - 1; i >= 0; i-- {
+				arr[i] = vm.pop()
+			}
+			err := vm.push(&object.Array{Elements: arr})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -184,6 +195,8 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	rightType := right.Type()
 	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
 		return vm.executeBinaryIntegerOperation(op, left, right)
+	} else if leftType == object.STRING_OBJ && rightType == object.STRING_OBJ {
+		return vm.executeBinaryStringOperation(op, left, right)
 	}
 	return fmt.Errorf("unsupported types for binary operation: %s %s", leftType, rightType)
 }
@@ -205,6 +218,19 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, leftObj object.Objec
 		return fmt.Errorf("unknown integer operator: %d", op)
 	}
 	return vm.push(&object.Integer{Value: result})
+}
+
+func (vm *VM) executeBinaryStringOperation(op code.Opcode, leftObj, rightObj object.Object) error {
+	var result string
+	leftValue := leftObj.(*object.String).Value
+	rightValue := rightObj.(*object.String).Value
+	switch op {
+	case code.OpAdd:
+		result = leftValue + rightValue
+	default:
+		return fmt.Errorf("unknown integer operator: %d", op)
+	}
+	return vm.push(&object.String{Value: result})
 }
 
 func (vm *VM) push(obj object.Object) error {
