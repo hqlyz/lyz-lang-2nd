@@ -38,6 +38,12 @@ func New(bytecode *compiler.Bytecode) *VM {
 	}
 }
 
+func NewWithGlobalsStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
+	vm := New(bytecode)
+	vm.globals = s
+	return vm
+}
+
 // Run method means power on the vm
 func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
@@ -98,13 +104,17 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpSetGlobal:
+		case code.OpGetGlobal:
 			index := int(code.ReadUint16(vm.instructions[ip+1:]))
 			ip += 2
-			err := vm.push(vm.constants[index])
+			err := vm.push(vm.globals[index])
 			if err != nil {
 				return err
 			}
+		case code.OpSetGlobal:
+			index := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			vm.globals[index] = vm.pop()
 		}
 	}
 	return nil

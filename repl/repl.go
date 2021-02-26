@@ -6,6 +6,7 @@ import (
 	"io"
 	"lyz-lang-2nd/compiler"
 	"lyz-lang-2nd/lexer"
+	"lyz-lang-2nd/object"
 	"lyz-lang-2nd/parser"
 	"lyz-lang-2nd/vm"
 )
@@ -31,6 +32,10 @@ func Start(in io.Reader, out io.Writer) {
 	scan := bufio.NewScanner(in)
 	w := bufio.NewWriter(out)
 
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalSize)
+	symbolTable := compiler.NewSymbolTable()
+
 	for {
 		w.WriteString(PROMPT)
 		w.Flush()
@@ -48,13 +53,15 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 			continue
 		}
-		machine := vm.New(comp.Bytecode())
+		// constants = code.Constants
+
+		machine := vm.NewWithGlobalsStore(comp.Bytecode(), globals)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
