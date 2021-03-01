@@ -5,6 +5,7 @@ import (
 	"lyz-lang-2nd/ast"
 	"lyz-lang-2nd/code"
 	"lyz-lang-2nd/object"
+	"sort"
 )
 
 type EmittedInstruction struct {
@@ -191,17 +192,34 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 		c.emit(code.OpArray, len(node.Elements))
 	case *ast.HashLiteral:
-		for k, v := range node.Pairs {
+		keys := []ast.Expression{}
+		for k := range node.Pairs {
+			keys = append(keys, k)
+		}
+		sort.Slice(keys, func(i, j int) bool {
+			return keys[i].String() < keys[j].String()
+		})
+		for _, k := range keys {
 			err := c.Compile(k)
 			if err != nil {
 				return err
 			}
-			err = c.Compile(v)
+			err = c.Compile(node.Pairs[k])
 			if err != nil {
 				return err
 			}
 		}
 		c.emit(code.OpHash, len(node.Pairs)*2)
+	case *ast.IndexExpression:
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
+		err = c.Compile(node.Index)
+		if err != nil {
+			return err
+		}
+		c.emit(code.OpIndex)
 	}
 	return nil
 }
