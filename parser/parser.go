@@ -360,6 +360,9 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	p.nextToken()
 	stm.Value = p.parseExpression(LOWEST)
+	if fl, ok := stm.Value.(*ast.FunctionLiteral); ok {
+		fl.Name = stm.Name.Value
+	}
 
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()

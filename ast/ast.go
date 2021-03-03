@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"lyz-lang-2nd/token"
 	"strings"
 )
@@ -226,6 +227,7 @@ type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier
 	Body       *BlockStatement
+	Name       string
 }
 
 func (fl *FunctionLiteral) expressionNode()      {}
@@ -238,6 +240,9 @@ func (fl *FunctionLiteral) String() string {
 	}
 
 	out.WriteString(fl.Token.Literal)
+	if fl.Name != "" {
+		out.WriteString(fmt.Sprintf("<%s>", fl.Name))
+	}
 	out.WriteString(token.LPAREN)
 	out.WriteString(strings.Join(params, ","))
 	out.WriteString(token.RPAREN)
