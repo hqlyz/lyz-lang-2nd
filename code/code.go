@@ -39,6 +39,8 @@ const (
 	OpSetLocal                    // 24
 	OpGetLocal                    // 25
 	OpGetBuiltin                  // 26
+	OpClosure                     // 27
+	OpGetFree                     // 28
 )
 
 type Definition struct {
@@ -74,6 +76,8 @@ var definitions = map[Opcode]*Definition{
 	OpSetLocal:      {"OpSetLocal", []int{1}},
 	OpGetLocal:      {"OpGetLocal", []int{1}},
 	OpGetBuiltin:    {"OpGetBuiltin", []int{1}},
+	OpClosure:       {"OpClosure", []int{2, 1}},
+	OpGetFree:       {"OpGetFree", []int{1}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -160,6 +164,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n", len(operands), operandCount)
 	}
 	switch operandCount {
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
 	case 0:
