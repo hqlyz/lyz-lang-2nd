@@ -174,16 +174,13 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		evaluated := Eval(f.Body, extendedEnv)
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
-		return f.Fn(args...)
+		if result := f.Fn(args...); result != nil {
+			return result
+		}
+		return NULL
 	default:
 		return newError("not a function: %s", fn.Type())
 	}
-	// function, ok := fn.(*object.Function)
-	// if !ok {
-	// }
-	// extendedEnv := entendFunctionEnv(function, args)
-	// evaluated := Eval(function.Body, extendedEnv)
-	// return unwrapReturnValue(evaluated)
 }
 
 func unwrapReturnValue(obj object.Object) object.Object {

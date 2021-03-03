@@ -37,9 +37,15 @@ func New() *Compiler {
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
 	}
+
+	st := NewSymbolTable()
+	for i, b := range object.Builtins {
+		st.DefineBuiltin(i, b.Name)
+	}
+
 	return &Compiler{
 		constants:   []object.Object{},
-		symbolTable: NewSymbolTable(),
+		symbolTable: st,
 		scopes:      []CompilationScope{mainScope},
 		scopeIndex:  0,
 	}
@@ -192,11 +198,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if !ok {
 			return fmt.Errorf("variable %s was not defined", node.Value)
 		}
-		if symbol.Scope == LocalScope {
-			c.emit(code.OpGetLocal, symbol.Index)
-		} else {
-			c.emit(code.OpGetGlobal, symbol.Index)
-		}
+		c.loadSymbol(symbol)
 	case *ast.StringLiteral:
 		s := &object.String{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(s))
@@ -369,4 +371,15 @@ func (c *Compiler) currentLastInstructions() EmittedInstruction {
 
 func (c *Compiler) currentPreviousInstructions() EmittedInstruction {
 	return c.scopes[c.scopeIndex].previousInstruction
+}
+
+func (c *Compiler) loadSymbol(s Symbol) {
+	switch s.Scope {
+	case GlobalScope:
+		c.emit(code.OpGetGlobal, s.Index)
+	case LocalScope:
+		c.emit(code.OpGetLocal, s.Index)
+	case BuiltinScope:
+		c.emit(code.OpGetBuiltin, s.Index)
+	}
 }
